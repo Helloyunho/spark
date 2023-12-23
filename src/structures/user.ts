@@ -1,14 +1,4 @@
-export interface UserInterface {
-  hasProfile: boolean
-  loggedIn: boolean
-  nickname: string
-  officialNotiAgree: boolean
-  officialNotiAgreeUpdateDate?: string
-  penalties: [] // unknown
-  profileImageUrl: string
-  userIdHash: string
-  verifiedMark: boolean
-}
+import type { User as ChzzkUser } from 'chzzk/dist/api/user.js'
 
 export class User {
   hasProfile: boolean
@@ -21,7 +11,7 @@ export class User {
   id: string
   verified: boolean
 
-  constructor(data: UserInterface) {
+  constructor(data: ChzzkUser) {
     this.hasProfile = data.hasProfile
     this.loggedIn = data.loggedIn
     this.nick = data.nickname

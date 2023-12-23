@@ -2,7 +2,7 @@
   "name": "spark",
   "version": "0.9.0",
   "description": "An unofficial API wrapper for chzzk, Naver streaming service.",
-  "main": "index.js",
+  "main": "dist/index.js",
   "license": "MIT",
   "scripts": {
     "build": "tsc && swc src --out-dir dist --source-maps",
