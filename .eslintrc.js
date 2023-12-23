@@ -11,6 +11,7 @@ module.exports = {
   },
   rules: {
     '@typescript-eslint/space-before-function-paren': 'off',
-    '@typescript-eslint/strict-boolean-expressions': 'off'
+    '@typescript-eslint/strict-boolean-expressions': 'off',
+    'generator-star-spacing': 'off'
   }
 }
