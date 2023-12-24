@@ -1,4 +1,4 @@
-import type { User as ChzzkUser } from 'chzzk/dist/api/user.js'
+import type { UserPayload } from '../types/user'
 
 export class User {
   hasProfile: boolean
@@ -11,7 +11,7 @@ export class User {
   id: string
   verified: boolean
 
-  constructor(data: ChzzkUser) {
+  constructor(data: UserPayload) {
     this.hasProfile = data.hasProfile
     this.loggedIn = data.loggedIn
     this.nick = data.nickname

@@ -1,10 +1,4 @@
 /* eslint-disable @typescript-eslint/indent */
-import {
-  ChzzkClient,
-  type LiveSearchResult,
-  type VideoSearchResult as ChzzkVideoSearchResult,
-  type ChannelSearchResult as ChzzkChannelSearchResult
-} from 'chzzk'
 import { User } from '../structures/user.ts'
 import { Channel } from '../structures/channel.ts'
 import { Video } from '../structures/video.ts'
@@ -14,37 +8,82 @@ import {
   type SearchOptions
 } from '../structures/search.ts'
 import type { Live } from '../structures/live.ts'
+import { RESTClient } from '../utils/rest.ts'
+import type { ResponsePayload } from '../types/etc.ts'
+import type { UserPayload } from '../types/user.ts'
+import {
+  GET_CHANNEL,
+  GET_USER_STATUS,
+  GET_VIDEO,
+  SEARCH_CHANNEL,
+  SEARCH_LIVE,
+  SEARCH_VIDEO
+} from '../types/endpoints.ts'
+import type { ChannelPayload } from '../types/channel.ts'
+import type { VideoPayload } from '../types/video.ts'
+import type {
+  SearchResultCleaned,
+  SearchResultPayload
+} from '../types/search.ts'
+import type { LivePayload } from '../types/live.ts'
 
 export class Client {
-  chzzkClient: ChzzkClient
+  rest: RESTClient
 
-  constructor() {
-    this.chzzkClient = new ChzzkClient()
+  constructor({ auth, session }: { auth?: string; session?: string } = {}) {
+    this.rest = new RESTClient({
+      auth,
+      session
+    })
   }
 
   async getUser(): Promise<User> {
-    return new User(await this.chzzkClient.user())
+    const data: ResponsePayload<UserPayload> = await this.rest.request({
+      url: GET_USER_STATUS
+    })
+    return new User(data.content)
   }
 
   async getChannel(channelId: string): Promise<Channel> {
-    return new Channel(this, await this.chzzkClient.channel(channelId))
+    const data: ResponsePayload<ChannelPayload> = await this.rest.request({
+      url: GET_CHANNEL(channelId)
+    })
+    return new Channel(this, data.content)
   }
 
   async getVideo(videoId: string): Promise<Video> {
-    return new Video(this, await this.chzzkClient.video(videoId))
+    const data: ResponsePayload<VideoPayload> = await this.rest.request({
+      url: GET_VIDEO(videoId)
+    })
+    return new Video(this, data.content)
   }
 
   async searchVideo(
     keyword: string,
     options?: SearchOptions
-  ): Promise<SearchResult<ChzzkVideoSearchResult, Video, SearchType.VIDEO>> {
+  ): Promise<
+    SearchResult<SearchResultCleaned<VideoPayload>, Video, SearchType.VIDEO>
+  > {
+    const data: ResponsePayload<
+      SearchResultPayload<{ video: VideoPayload; channel: ChannelPayload }>
+    > = await this.rest.request({
+      url: SEARCH_VIDEO,
+      query: {
+        keyword,
+        size: options?.size?.toString() ?? '12',
+        offset: options?.offset?.toString() ?? '0'
+      }
+    })
     return new SearchResult(
       this,
-      await this.chzzkClient.search.videos(keyword, {
-        size: 12,
-        offset: 0,
-        ...options
-      }),
+      {
+        size: data.content.size,
+        nextOffset: data.content.page?.next.offset ?? undefined,
+        result: data.content.data.map((result) => ({
+          ...result.video,
+          channel: result.channel
+        }))
+      },
       SearchType.VIDEO,
       keyword
     )
@@ -54,14 +93,17 @@ export class Client {
     keyword: string,
     options?: SearchOptions
   ): AsyncGenerator<
-    SearchResult<ChzzkVideoSearchResult, Video, SearchType.VIDEO>,
+    SearchResult<SearchResultCleaned<VideoPayload>, Video, SearchType.VIDEO>,
     any,
     unknown
   > {
     return {
       async *[Symbol.asyncIterator]() {
-        let r: SearchResult<ChzzkVideoSearchResult, Video, SearchType.VIDEO> =
-          await this.searchVideo(keyword, options)
+        let r: SearchResult<
+          SearchResultCleaned<VideoPayload>,
+          Video,
+          SearchType.VIDEO
+        > = await this.searchVideo(keyword, options)
         while (r.length > 0) {
           yield r
           r = await r.next()
@@ -73,14 +115,29 @@ export class Client {
   async searchLive(
     keyword: string,
     options?: SearchOptions
-  ): Promise<SearchResult<LiveSearchResult, Live, SearchType.LIVE>> {
+  ): Promise<
+    SearchResult<SearchResultCleaned<LivePayload>, Live, SearchType.LIVE>
+  > {
+    const data: ResponsePayload<
+      SearchResultPayload<{ live: LivePayload; channel: ChannelPayload }>
+    > = await this.rest.request({
+      url: SEARCH_LIVE,
+      query: {
+        keyword,
+        size: options?.size?.toString() ?? '12',
+        offset: options?.offset?.toString() ?? '0'
+      }
+    })
     return new SearchResult(
       this,
-      await this.chzzkClient.search.lives(keyword, {
-        size: 12,
-        offset: 0,
-        ...options
-      }),
+      {
+        size: data.content.size,
+        nextOffset: data.content.page?.next.offset ?? undefined,
+        result: data.content.data.map((result) => ({
+          ...result.live,
+          channel: result.channel
+        }))
+      },
       SearchType.LIVE,
       keyword
     )
@@ -90,14 +147,17 @@ export class Client {
     keyword: string,
     options?: SearchOptions
   ): AsyncGenerator<
-    SearchResult<LiveSearchResult, Live, SearchType.LIVE>,
+    SearchResult<SearchResultCleaned<LivePayload>, Live, SearchType.LIVE>,
     any,
     unknown
   > {
     return {
       async *[Symbol.asyncIterator]() {
-        let r: SearchResult<LiveSearchResult, Live, SearchType.LIVE> =
-          await this.searchLive(keyword, options)
+        let r: SearchResult<
+          SearchResultCleaned<LivePayload>,
+          Live,
+          SearchType.LIVE
+        > = await this.searchLive(keyword, options)
         while (r.length > 0) {
           yield r
           r = await r.next()
@@ -110,15 +170,29 @@ export class Client {
     keyword: string,
     options?: SearchOptions
   ): Promise<
-    SearchResult<ChzzkChannelSearchResult, Channel, SearchType.CHANNEL>
+    SearchResult<
+      SearchResultCleaned<ChannelPayload>,
+      Channel,
+      SearchType.CHANNEL
+    >
   > {
+    const data: ResponsePayload<
+      SearchResultPayload<{ channel: ChannelPayload }>
+    > = await this.rest.request({
+      url: SEARCH_CHANNEL,
+      query: {
+        keyword,
+        size: options?.size?.toString() ?? '12',
+        offset: options?.offset?.toString() ?? '0'
+      }
+    })
     return new SearchResult(
       this,
-      await this.chzzkClient.search.channels(keyword, {
-        size: 12,
-        offset: 0,
-        ...options
-      }),
+      {
+        size: data.content.size,
+        nextOffset: data.content.page?.next.offset ?? undefined,
+        result: data.content.data.map((result) => result.channel)
+      },
       SearchType.CHANNEL,
       keyword
     )
@@ -128,12 +202,19 @@ export class Client {
     keyword: string,
     options?: SearchOptions
   ): AsyncGenerator<
-    SearchResult<ChzzkChannelSearchResult, Channel, SearchType.CHANNEL>,
+    SearchResult<
+      SearchResultCleaned<ChannelPayload>,
+      Channel,
+      SearchType.CHANNEL
+    >,
     any,
     unknown
   > {
-    let r: SearchResult<ChzzkChannelSearchResult, Channel, SearchType.CHANNEL> =
-      await this.searchChannel(keyword, options)
+    let r: SearchResult<
+      SearchResultCleaned<ChannelPayload>,
+      Channel,
+      SearchType.CHANNEL
+    > = await this.searchChannel(keyword, options)
     while (r.length > 0) {
       yield r
       r = await r.next()

@@ -1,5 +1,5 @@
 export interface Category {
-  type?: string
+  type?: 'GAME' | 'ETC' | string
   id?: string
   text: string
 }

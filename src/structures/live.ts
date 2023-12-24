@@ -1,14 +1,14 @@
-import type {
-  LiveStatus as ChzzkLiveStatus,
-  LivePollingStatus as ChzzkLivePollingStatus,
-  LivePlayback as ChzzkLivePlayback,
-  Live as ChzzkLive,
-  Channel as ChzzkChannel,
-  ChannelLiveDetail as ChzzkChannelLiveDetail
-} from 'chzzk'
 import type { Category } from '../types/category.ts'
 import { Channel } from './channel.ts'
 import type { Client } from '../client/index.ts'
+import type {
+  ChannelLiveDetailPayload,
+  LiveChatAvailableCondition,
+  LiveChatAvailableGroup,
+  LivePayload,
+  LivePollingStatusPayload,
+  LiveStatusPayload
+} from '../types/live.ts'
 
 export class LiveStatus {
   accumulatedUserCount: number
@@ -17,23 +17,23 @@ export class LiveStatus {
   currentUserCount: number
   faultStatus?: string
   category: Category
-  pollingStatus: ChzzkLivePollingStatus
+  pollingStatus: LivePollingStatusPayload
   title: string
   promoted: boolean
   status: string
 
-  constructor(data: ChzzkLiveStatus) {
+  constructor(data: LiveStatusPayload) {
     this.accumulatedUserCount = data.accumulateCount
     this.adult = data.adult
     this.chatID = data.chatChannelId
     this.currentUserCount = data.concurrentUserCount
-    this.faultStatus = data.faultStatus
+    this.faultStatus = data.faultStatus ?? undefined
     this.category = {
-      type: data.categoryType,
-      id: data.liveCategory,
+      type: data.categoryType ?? undefined,
+      id: data.liveCategory ?? undefined,
       text: data.liveCategoryValue
     }
-    this.pollingStatus = data.livePollingStatus
+    this.pollingStatus = JSON.parse(data.livePollingStatus)
     this.title = data.liveTitle
     this.promoted = data.paidPromotion
     this.status = data.status
@@ -51,10 +51,10 @@ export class Live {
   id: number
   chatID: string
   category: Category
-  channel: Channel
-  playbackInfo: ChzzkLivePlayback // maybe later we can make this a class
+  channel?: Channel
+  // playbackInfo: ChzzkLivePlayback // maybe later we can make this a class
 
-  constructor(client: Client, data: ChzzkLive) {
+  constructor(client: Client, data: LivePayload) {
     this.client = client
     this.title = data.liveTitle
     this.imageURL = data.liveImageUrl
@@ -65,12 +65,12 @@ export class Live {
     this.id = data.liveId
     this.chatID = data.chatChannelId
     this.category = {
-      type: data.categoryType,
-      id: data.liveCategory,
+      type: data.categoryType ?? undefined,
+      id: data.liveCategory ?? undefined,
       text: data.liveCategoryValue
     }
-    this.channel = new Channel(client, data.channel as ChzzkChannel) // since we already handle partial channels
-    this.playbackInfo = data.livePlayback
+    this.channel = data.channel ? new Channel(client, data.channel) : undefined
+    // this.playbackInfo = data.livePlayback
   }
 }
 
@@ -78,13 +78,13 @@ export class ChannelLiveDetail extends Live {
   status: string
   endedAt?: Date
   chatActive: boolean
-  chatAvailableGroup: 'ALL' | string
+  chatAvailableGroup: LiveChatAvailableGroup | string
   promoted: boolean
-  chatAvailableCondition: 'NONE' | string
+  chatAvailableCondition: LiveChatAvailableCondition | string
   minFollowerMinute: number
-  pollingStatus: ChzzkLivePollingStatus
+  pollingStatus: LivePollingStatusPayload
 
-  constructor(client: Client, data: ChzzkChannelLiveDetail) {
+  constructor(client: Client, data: ChannelLiveDetailPayload) {
     super(client, data)
     this.status = data.status
     this.endedAt = data.closeDate
@@ -95,6 +95,6 @@ export class ChannelLiveDetail extends Live {
     this.promoted = data.paidPromotion
     this.chatAvailableCondition = data.chatAvailableCondition
     this.minFollowerMinute = data.minFollowerMinute
-    this.pollingStatus = data.livePollingStatus
+    this.pollingStatus = JSON.parse(data.livePollingStatus)
   }
 }

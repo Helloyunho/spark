@@ -1,19 +1,12 @@
 /* eslint-disable @typescript-eslint/indent */
-import type {
-  SearchResultVideo as ChzzkSearchResultVideo,
-  Video as ChzzkVideo,
-  Live as ChzzkLive,
-  Channel as ChzzkChannel
-} from 'chzzk'
 import type { Client } from '../client/index.ts'
 import { Video } from './video.ts'
 import { Live } from './live.ts'
 import { Channel } from './channel.ts'
-
-interface ChzzkSearchResult {
-  size: number
-  nextOffset: number
-}
+import type { VideoPayload } from '../types/video.ts'
+import type { LivePayload } from '../types/live.ts'
+import type { ChannelPayload } from '../types/channel.ts'
+import type { SearchResultCleaned } from '../types/search.ts'
 
 export interface SearchOptions {
   size?: number
@@ -32,15 +25,14 @@ interface SearchTypeToClassMap {
   channels: Channel
 }
 
-interface SearchTypeToChzzkPayloadMap {
-  videos: ChzzkSearchResultVideo
-  lives: ChzzkLive
-  channels: ChzzkChannel
+interface SearchTypeToPayloadMap {
+  videos: VideoPayload
+  lives: LivePayload
+  channels: ChannelPayload
 }
 
 export class SearchResult<
-  Payload extends ChzzkSearchResult &
-    Record<Type, Array<SearchTypeToChzzkPayloadMap[Type]>>,
+  Payload extends SearchResultCleaned<SearchTypeToPayloadMap[Type]>,
   Result extends SearchTypeToClassMap[Type],
   Type extends SearchType
 > {
@@ -48,20 +40,20 @@ export class SearchResult<
   type: Type
   size: number
   offset: number = 0
-  nextOffset: number
+  nextOffset?: number
   keyword?: string
   results: Result[]
 
   constructor(client: Client, payload: Payload, type: Type, keyword?: string) {
     this.client = client
-    this.results = payload[type].map((result) => {
+    this.results = payload.result.map((result) => {
       switch (type) {
         case SearchType.VIDEO:
-          return new Video(client, result as unknown as ChzzkVideo) as Result // since we already handle partial videos
+          return new Video(client, result as VideoPayload) as Result // since we already handle partial videos
         case SearchType.LIVE:
-          return new Live(client, result as ChzzkLive) as Result
+          return new Live(client, result as LivePayload) as Result
         case SearchType.CHANNEL:
-          return new Channel(client, result as ChzzkChannel) as Result
+          return new Channel(client, result as ChannelPayload) as Result
         default:
           throw new Error('Invalid search type')
       }
@@ -69,7 +61,7 @@ export class SearchResult<
     this.type = type
     this.size = payload.size
     this.nextOffset = payload.nextOffset
-    this.offset = payload.nextOffset - payload.size
+    this.offset = payload.nextOffset ? payload.nextOffset - payload.size : 0
     this.keyword = keyword
   }
 
