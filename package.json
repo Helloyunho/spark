@@ -1,8 +1,12 @@
 {
-  "name": "spark",
+  "name": "spark-chzzk",
   "version": "0.9.0",
   "description": "An unofficial API wrapper for chzzk, Naver streaming service.",
   "main": "dist/index.js",
+  "type": "module",
+  "files": [
+    "dist"
+  ],
   "license": "MIT",
   "scripts": {
     "build": "tsc && swc src --out-dir dist --source-maps",
@@ -15,7 +19,11 @@
     "email": "me@helloyunho.xyz"
   },
   "dependencies": {
-    "chzzk": "^1.0.6"
+    "chzzk": "^1.0.9"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Helloyunho/spark.git"
   },
   "devDependencies": {
     "@swc/cli": "^0.1.63",
