@@ -3,13 +3,16 @@ import {
   ChzzkClient,
   type LiveSearchResult,
   type VideoSearchResult as ChzzkVideoSearchResult,
-  type SearchOptions,
   type ChannelSearchResult as ChzzkChannelSearchResult
 } from 'chzzk'
 import { User } from '../structures/user.ts'
 import { Channel } from '../structures/channel.ts'
 import { Video } from '../structures/video.ts'
-import { SearchResult, SearchType } from '../structures/search.ts'
+import {
+  SearchResult,
+  SearchType,
+  type SearchOptions
+} from '../structures/search.ts'
 import type { Live } from '../structures/live.ts'
 
 export class Client {
@@ -33,11 +36,15 @@ export class Client {
 
   async searchVideo(
     keyword: string,
-    options: SearchOptions
+    options?: SearchOptions
   ): Promise<SearchResult<ChzzkVideoSearchResult, Video, SearchType.VIDEO>> {
     return new SearchResult(
       this,
-      await this.chzzkClient.search.videos(keyword, options),
+      await this.chzzkClient.search.videos(keyword, {
+        size: 12,
+        offset: 0,
+        ...options
+      }),
       SearchType.VIDEO,
       keyword
     )
@@ -45,7 +52,7 @@ export class Client {
 
   async *searchVideoIter(
     keyword: string,
-    options: SearchOptions
+    options?: SearchOptions
   ): AsyncGenerator<
     SearchResult<ChzzkVideoSearchResult, Video, SearchType.VIDEO>,
     any,
@@ -65,11 +72,15 @@ export class Client {
 
   async searchLive(
     keyword: string,
-    options: SearchOptions
+    options?: SearchOptions
   ): Promise<SearchResult<LiveSearchResult, Live, SearchType.LIVE>> {
     return new SearchResult(
       this,
-      await this.chzzkClient.search.lives(keyword, options),
+      await this.chzzkClient.search.lives(keyword, {
+        size: 12,
+        offset: 0,
+        ...options
+      }),
       SearchType.LIVE,
       keyword
     )
@@ -77,7 +88,7 @@ export class Client {
 
   async *searchLiveIter(
     keyword: string,
-    options: SearchOptions
+    options?: SearchOptions
   ): AsyncGenerator<
     SearchResult<LiveSearchResult, Live, SearchType.LIVE>,
     any,
@@ -97,13 +108,17 @@ export class Client {
 
   async searchChannel(
     keyword: string,
-    options: SearchOptions
+    options?: SearchOptions
   ): Promise<
     SearchResult<ChzzkChannelSearchResult, Channel, SearchType.CHANNEL>
   > {
     return new SearchResult(
       this,
-      await this.chzzkClient.search.channels(keyword, options),
+      await this.chzzkClient.search.channels(keyword, {
+        size: 12,
+        offset: 0,
+        ...options
+      }),
       SearchType.CHANNEL,
       keyword
     )
@@ -111,24 +126,17 @@ export class Client {
 
   async *searchChannelIter(
     keyword: string,
-    options: SearchOptions
+    options?: SearchOptions
   ): AsyncGenerator<
     SearchResult<ChzzkChannelSearchResult, Channel, SearchType.CHANNEL>,
     any,
     unknown
   > {
-    return {
-      async *[Symbol.asyncIterator]() {
-        let r: SearchResult<
-          ChzzkChannelSearchResult,
-          Channel,
-          SearchType.CHANNEL
-        > = await this.searchChannel(keyword, options)
-        while (r.length > 0) {
-          yield r
-          r = await r.next()
-        }
-      }
+    let r: SearchResult<ChzzkChannelSearchResult, Channel, SearchType.CHANNEL> =
+      await this.searchChannel(keyword, options)
+    while (r.length > 0) {
+      yield r
+      r = await r.next()
     }
   }
 }
