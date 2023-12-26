@@ -1,6 +1,6 @@
 import type { EventMap } from 'typed-emitter'
-import type { Message } from '../../structures/message'
-import type { Donation } from '../../structures/donation'
+import type { Message } from '../../structures/message.ts'
+import type { Donation } from '../../structures/donation.ts'
 
 export interface ChatEvents extends EventMap {
   error: (error: any) => void
