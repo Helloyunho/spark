@@ -37,6 +37,14 @@ export class Client {
     })
   }
 
+  setCredentials({
+    auth,
+    session
+  }: { auth?: string; session?: string } = {}): void {
+    this.rest.auth = auth
+    this.rest.session = session
+  }
+
   async getUser(): Promise<User> {
     const data: ResponsePayload<UserPayload> = await this.rest.request({
       url: GET_USER_STATUS
@@ -97,18 +105,14 @@ export class Client {
     any,
     unknown
   > {
-    return {
-      async *[Symbol.asyncIterator]() {
-        let r: SearchResult<
-          SearchResultCleaned<VideoPayload>,
-          Video,
-          SearchType.VIDEO
-        > = await this.searchVideo(keyword, options)
-        while (r.length > 0) {
-          yield r
-          r = await r.next()
-        }
-      }
+    let r: SearchResult<
+      SearchResultCleaned<VideoPayload>,
+      Video,
+      SearchType.VIDEO
+    > = await this.searchVideo(keyword, options)
+    while (r.length > 0) {
+      yield r
+      r = await r.next()
     }
   }
 
@@ -151,18 +155,14 @@ export class Client {
     any,
     unknown
   > {
-    return {
-      async *[Symbol.asyncIterator]() {
-        let r: SearchResult<
-          SearchResultCleaned<LivePayload>,
-          Live,
-          SearchType.LIVE
-        > = await this.searchLive(keyword, options)
-        while (r.length > 0) {
-          yield r
-          r = await r.next()
-        }
-      }
+    let r: SearchResult<
+      SearchResultCleaned<LivePayload>,
+      Live,
+      SearchType.LIVE
+    > = await this.searchLive(keyword, options)
+    while (r.length > 0) {
+      yield r
+      r = await r.next()
     }
   }
 

@@ -1,4 +1,4 @@
-import type { Category } from './category'
+import type { Category } from './category.ts'
 import type { ChannelPayload } from './channel.ts'
 
 export enum VideoType {

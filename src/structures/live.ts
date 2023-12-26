@@ -9,6 +9,7 @@ import type {
   LivePollingStatusPayload,
   LiveStatusPayload
 } from '../types/live.ts'
+import { Chat } from '../chat/index.ts'
 
 export class LiveStatus {
   accumulatedUserCount: number
@@ -52,6 +53,7 @@ export class Live {
   chatID: string
   category: Category
   channel?: Channel
+  private _chat?: Chat
   // playbackInfo: ChzzkLivePlayback // maybe later we can make this a class
 
   constructor(client: Client, data: LivePayload) {
@@ -71,6 +73,15 @@ export class Live {
     }
     this.channel = data.channel ? new Channel(client, data.channel) : undefined
     // this.playbackInfo = data.livePlayback
+  }
+
+  get chat(): Chat {
+    if (!this._chat) {
+      this._chat = new Chat(this.client, this.chatID, {
+        channelID: this.channel?.id
+      })
+    }
+    return this._chat
   }
 }
 

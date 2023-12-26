@@ -121,11 +121,11 @@ export class SearchResult<
     }
   }
 
-  first(): Result {
+  first(): Result | undefined {
     return this.results[0]
   }
 
-  last(): Result {
+  last(): Result | undefined {
     return this.results[this.results.length - 1]
   }
 

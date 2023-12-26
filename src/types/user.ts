@@ -1,9 +1,9 @@
 export interface UserPayload {
   hasProfile: boolean
-  userIdHash: string
-  nickname: string
-  profileImageUrl: string
-  penalties: []
+  userIdHash: string | null
+  nickname: string | null
+  profileImageUrl: string | null
+  penalties: [] | null
   officialNotiAgree: boolean
   officialNotiAgreeUpdateDate: string | null
   verifiedMark: boolean

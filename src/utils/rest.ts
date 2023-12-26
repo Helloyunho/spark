@@ -26,7 +26,7 @@ export class RESTClient {
     query?: Record<string, string | undefined>
   }): Promise<R> {
     if (this.auth !== undefined && this.session !== undefined) {
-      const cookies = headers.Cookie.split(';')
+      const cookies = headers.Cookie?.split(';') ?? []
       cookies.push(`NID_AUT=${this.auth}`)
       cookies.push(`NID_SES=${this.session}`)
       headers.Cookie = cookies.join('; ')

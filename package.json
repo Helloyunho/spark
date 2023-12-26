@@ -1,6 +1,6 @@
 {
   "name": "spark-chzzk",
-  "version": "0.9.2",
+  "version": "0.9.3",
   "description": "An unofficial API wrapper for chzzk, Naver streaming service.",
   "main": "dist/index.js",
   "type": "module",
@@ -18,7 +18,10 @@
     "url": "https://helloyunho.xyz",
     "email": "me@helloyunho.xyz"
   },
-  "dependencies": {},
+  "dependencies": {
+    "isomorphic-ws": "^5.0.0",
+    "ws": "^8.15.1"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Helloyunho/spark.git"
