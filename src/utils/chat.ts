@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/indent */
-import type { BaseMessagePayload } from '../types/chat/message'
+import type { BaseMessagePayload } from '../types/chat/message.ts'
 import type {
   EventMessagePayload,
   EventMessageType
-} from '../types/chat/payload'
+} from '../types/chat/payload.ts'
 
 export const eventMessagePayloadToBaseMessagePayload = <
   Code extends EventMessageType

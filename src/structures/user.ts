@@ -1,4 +1,4 @@
-import type { UserPayload } from '../types/user'
+import type { UserPayload } from '../types/user.ts'
 
 export class User {
   hasProfile: boolean
